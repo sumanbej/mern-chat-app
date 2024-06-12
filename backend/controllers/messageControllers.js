@@ -29,7 +29,7 @@ const sendMessage = asyncHandler(async (req, res) => {
     return res.sendStatus(400);
   }
 
-  var newMessage = {
+  let newMessage = {
     sender: req.user._id,
     content: content,
     chat: chatId,
@@ -39,7 +39,7 @@ const sendMessage = asyncHandler(async (req, res) => {
     let message = await Message.create(newMessage);
 
     message = await message
-      .populate("sender")
+      .populate("sender", "name pic")
       .then((populatedMessages) => {
         // Now you have the populated messages
         // console.log(populatedMessages);
@@ -48,7 +48,10 @@ const sendMessage = asyncHandler(async (req, res) => {
       .catch((error) => {
         console.error(error);
       });
-    message = await message.populate("chat").execPopulate();
+    message = await message
+      .populate("chat")
+      .then((populatedMessages) => res.json(populatedMessages));
+
     message = await User.populate(message, {
       path: "chat.users",
       select: "name pic email",
